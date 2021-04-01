@@ -1,50 +1,48 @@
 import numpy as np
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt, patches
 from matplotlib.widgets import Slider
 
-from polynomial import Polynomial
-from triangle import Triangle
+from point import Point
+from rectangle import Rectangle
+
+# Data setup
+rectangle = Rectangle()
+
+# Plot formatting
+fig, ax = plt.subplots()
+
+ax.set_xlim([0, Rectangle.BASE_PERIMETER / 2])
+ax.set_ylim([0, Rectangle.BASE_PERIMETER / 2])
 
 
-def draw(master_point):
-    # Dataset setup
-    x = np.linspace(-5, 5, 101)
+# Data rendering
+def update_rendered_data(argument):
+    rectangle.b = Point(argument)
 
-    # Plot formatting
-    fig, ax = plt.subplots()
+    rectangle_commanding_anchor.set_xdata(rectangle.b.x)
+    rectangle_commanding_anchor.set_ydata(rectangle.b.y)
+    rectangle_drawn.set_width(rectangle.get_width())
+    rectangle_drawn.set_height(rectangle.get_height())
 
-    ax.set_xlim([-4, 4])
-    ax.set_ylim([-1, 4])
+    print(f'{rectangle.to_string()}\n'
+          f'Current area: {rectangle.get_area()}')
 
-    # Data rendering
-    ax.plot(x, Polynomial(x).value)
-
-    ax.plot(*Triangle(Polynomial(x)).c.value, 'bo')
-
-    slave_point_reference, = ax.plot(-master_point.x, master_point.y, 'bo')
-    master_point_reference, = ax.plot(*master_point.value, 'bo')
-
-    ax_slider = plt.axes([0.25, 0, 0.65, 0.03])
-    point_a_argument = Slider(ax_slider, 'argument of A', 0, 10, valinit=0)
-
-    def update(val):
-        new_triangle = Triangle(Polynomial(point_a_argument.val))
-        master_point_reference.set_ydata(new_triangle.polynomial.value)
-        master_point_reference.set_xdata(new_triangle.a.x)
-        slave_point_reference.set_ydata(new_triangle.polynomial.value)
-        slave_point_reference.set_xdata(new_triangle.b.x)
-
-        print(f'{new_triangle.to_string()}')
-        print(f'Current area: {new_triangle.get_area()}')
-
-        fig.canvas.draw_idle()
-
-    point_a_argument.on_changed(update)
-
-    plt.show()
+    fig.canvas.draw_idle()
 
 
-x_optimal = 1
-triangle = Triangle(Polynomial(x_optimal))
+render_guide_domain = np.linspace(0, 18, 100)
+ax.plot(render_guide_domain, -render_guide_domain + 18)
 
-draw(triangle.a)
+rectangle_commanding_anchor, = ax.plot(*rectangle.b.value, 'bo')
+rectangle_drawn = patches.Rectangle(rectangle.a.value,
+                                    rectangle.get_width(),
+                                    rectangle.get_height(),
+                                    linewidth=1, edgecolor='b', facecolor='none')
+ax.add_patch(rectangle_drawn)
+
+anchor_point_argument = Slider(plt.axes([0.25, 0, 0.65, 0.03]),
+                               'Anchor argument',
+                               0, Rectangle.BASE_PERIMETER / 2)
+anchor_point_argument.on_changed(update_rendered_data)
+
+plt.show()

@@ -5,4 +5,4 @@ class Point:
         self.value = [self.x, self.y]
 
     def to_string(self):
-        return vars(self)
+        return self.value
