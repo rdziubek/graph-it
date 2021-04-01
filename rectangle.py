@@ -1,3 +1,7 @@
+import math
+
+import numpy as np
+
 from point import Point
 
 
@@ -7,14 +11,15 @@ class Rectangle:
     as well as its static perimeter of 36 units.
     """
     BASE_PERIMETER = 36
+    TARGET_AREA = 81  # standard for a 9 by 9 rectangle (square) (optimal-valued)
 
-    def __init__(self, second_anchor: Point = Point()):
+    def __init__(self, width=0):
         """
         Initialise the rectangle.
-        :param second_anchor: The context for laying out rectangle's b upper right point.
+        :param width: The context for laying out the rectangle.
         """
         self.a = Point(0, 0)
-        self._b = self._initialise_with_argument(second_anchor)
+        self._b = self._initialise_with_argument(width)
 
     @property
     def b(self):
@@ -24,12 +29,12 @@ class Rectangle:
     def b(self, value):
         self._b = self._initialise_with_argument(value)
 
-    def _initialise_with_argument(self, point):
-        return Point(point.x,
-                     self._calculate_matching_height(abs(point.x - self.a.x)))
+    def _initialise_with_argument(self, width):
+        return Point(self.a.x + width,
+                     self.a.y + self._calculate_matching_height(width))
 
     def _calculate_matching_height(self, width):
-        return (self.BASE_PERIMETER - 2 * width) / 2
+        return self.TARGET_AREA / width if width != 0 else math.inf
 
     def get_width(self):
         return abs(self._b.x - self.a.x)
